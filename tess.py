@@ -1,6 +1,11 @@
 import cv2
 import numpy as np
+import pytesseract  # Importando o Tesseract para OCR
 import os
+
+# Adicionar o caminho para o executável do Tesseract se necessário
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 
 # Carregue o classificador em cascata treinado para placas de veículos
 plate_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_russian_plate_number.xml')
@@ -33,7 +38,7 @@ while True:
 
     # Converta o frame para escala de cinza
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    
+
     # Detecte placas de veículos
     plates = plate_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
@@ -86,6 +91,10 @@ while True:
             cv2.imwrite(output_path, filled_img)
             print(f'Imagem processada da placa salva em: {output_path}')
             frame_count = 0  # Resetar o contador após salvar a imagem
+
+            # Realize OCR (reconhecimento de caracteres) usando Tesseract
+            plate_text = pytesseract.image_to_string(filled_img, config='--psm 7')  # Configuração para melhor leitura de placas
+            print(f'Texto da placa detectada: {plate_text.strip()}')
 
         # Desenhe um retângulo verde ao redor da placa detectada na imagem original
         cv2.rectangle(display_frame, (x + 22, y + 17), (x+w - 30, y+h - 8), (0, 255, 0), 2)
